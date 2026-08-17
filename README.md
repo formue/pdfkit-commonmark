@@ -135,6 +135,26 @@ Pull requests to fill in these features are welcome.
     // end the document
     doc.end();
 
+### Options
+
+The renderer constructor accepts an options object (merged over the defaults in
+`src/default-options.js`):
+
+| Option | Default | Description |
+|---|---|---|
+| `fontSize` | `12` | Base font size. |
+| `fonts` | Times/Helvetica/Courier map | Font used per internal role (`default`, `bold`, `italic`, `bold-italic`, `heading-bold`, `heading-default`, `code`). |
+| `fillColor` | `'black'` | Text fill color. |
+| `softbreak` | `' '` | String inserted for a markdown soft break. Set to `'\n'` to render soft breaks as hard line breaks instead of collapsing them to a space. |
+| `headingSizes` | library defaults | Map of heading level → multiplier of `fontSize`. Levels not present fall back to `1x`. When omitted, defaults apply (h1 `1.4x`, h2/h3 `1.2x`, else `1x`). Example: `{ 1: 1.2, 2: 1.05, 3: 1.05 }`. |
+
+    const writer = new CommonmarkPDFRenderer({
+      fontSize: 11,
+      fillColor: '#182361',
+      softbreak: '\n',
+      headingSizes: { 1: 1.2, 2: 1.05, 3: 1.05 },
+    });
+
 ## Dependencies
 
 commonmark and pdfkit are marked as peerDependencies. Technically 

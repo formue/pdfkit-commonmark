@@ -1409,4 +1409,61 @@ describe('intermediate "operations" format', () => {
 
     });
 
+    describe('configurable softbreak (fork option)', () => {
+
+        it('renders a soft break as a space by default', () => {
+            const parsed = reader.parse('first line\nsecond line');
+            const ops = instance.operations(parsed);
+            assert.ok(
+                ops.some(op => op.text === ' ' && op.continued === true),
+                'expected a continued space operation for the soft break'
+            );
+        });
+
+        it('renders a soft break as a hard line break when softbreak is "\\n"', () => {
+            const nlInstance = new CommonmarkPDFRenderer({ debug: true, softbreak: '\n' });
+            const parsed = reader.parse('first line\nsecond line');
+            const ops = nlInstance.operations(parsed);
+            assert.ok(
+                ops.some(op => op.text === '\n' && op.continued === false),
+                'expected a discontinued newline operation for the soft break'
+            );
+            assert.ok(
+                !ops.some(op => op.text === ' ' && op.continued === true),
+                'should not emit a continued space when softbreak is a newline'
+            );
+        });
+
+    });
+
+    describe('configurable headingSizes (fork option)', () => {
+
+        it('uses library default multipliers when headingSizes is omitted', () => {
+            const parsed = reader.parse('# Headline');
+            const ops = instance.operations(parsed);
+            const heading = ops.find(op => op.font === 'heading-bold' && typeof op.fontSize === 'number');
+            assert.equal(heading.fontSize, 12 * 1.4);
+        });
+
+        it('applies a custom headingSizes multiplier map', () => {
+            const sized = new CommonmarkPDFRenderer({ debug: true, headingSizes: { 1: 1.2, 2: 1.05, 3: 1.05 } });
+
+            const h1 = sized.operations(reader.parse('# Headline'))
+                .find(op => op.font === 'heading-bold' && typeof op.fontSize === 'number');
+            assert.equal(h1.fontSize, 12 * 1.2);
+
+            const h2 = sized.operations(reader.parse('## Headline'))
+                .find(op => op.font === 'heading-bold' && typeof op.fontSize === 'number');
+            assert.equal(h2.fontSize, 12 * 1.05);
+        });
+
+        it('falls back to 1x for heading levels not in the map', () => {
+            const sized = new CommonmarkPDFRenderer({ debug: true, headingSizes: { 1: 1.2 } });
+            const h4 = sized.operations(reader.parse('#### Headline'))
+                .find(op => op.font === 'heading-bold' && typeof op.fontSize === 'number');
+            assert.equal(h4.fontSize, 12);
+        });
+
+    });
+
 });
